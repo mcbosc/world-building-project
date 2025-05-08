@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Clock, Star } from 'lucide-react';
 
 interface HistoricalEvent {
@@ -14,7 +14,10 @@ interface HistoricalEvent {
 }
 
 const HistoryTimeline = () => {
-  const [events, setEvents] = useState<HistoricalEvent[]>([]);
+  const [events, setEvents] = useState<HistoricalEvent[]>(() => {
+    const savedEvents = localStorage.getItem('historicalEvents');
+    return savedEvents ? JSON.parse(savedEvents) : [];
+  });
   const [editingEvent, setEditingEvent] = useState<HistoricalEvent | null>(null);
   const [eventForm, setEventForm] = useState({
     name: '',
@@ -26,6 +29,11 @@ const HistoryTimeline = () => {
     artifacts: '',
     isCriticalPoint: false
   });
+
+  // Save events to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('historicalEvents', JSON.stringify(events));
+  }, [events]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -94,146 +102,150 @@ const HistoryTimeline = () => {
       <h2 className="text-2xl font-bold mb-6">History & Timeline</h2>
       
       <div className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">
-            {editingEvent ? 'Edit Historical Event' : 'Add New Historical Event'}
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Event Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={eventForm.name}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter the name of the historical event"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date/Time Period
-              </label>
-              <input
-                type="text"
-                name="date"
-                value={eventForm.date}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter the date or time period (e.g., 'Year 1000', '1000 CE', 'Third Age')"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={eventForm.description}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={4}
-                placeholder="Describe what happened during this event"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Significance
-              </label>
-              <textarea
-                name="significance"
-                value={eventForm.significance}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={4}
-                placeholder="Explain why this event is important to the story"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Impact on the World
-              </label>
-              <textarea
-                name="impact"
-                value={eventForm.impact}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={4}
-                placeholder="Describe how this event changed the world"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Key Characters Involved
-              </label>
-              <textarea
-                name="characters"
-                value={eventForm.characters}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={4}
-                placeholder="List and describe the important characters involved in this event"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Important Artifacts or Items
-              </label>
-              <textarea
-                name="artifacts"
-                value={eventForm.artifacts}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={4}
-                placeholder="List any important items, artifacts, or objects associated with this event"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="isCriticalPoint"
-                checked={eventForm.isCriticalPoint}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label className="text-sm font-medium text-gray-700">
-                Mark as Critical Story Point
-              </label>
-            </div>
-            <div className="flex justify-end space-x-2">
-              {editingEvent && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-bold mb-4">Historical Timeline</h2>
+
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingEvent ? 'Edit Historical Event' : 'Add New Historical Event'}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={eventForm.name}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter the name of the historical event"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date/Time Period
+                </label>
+                <input
+                  type="text"
+                  name="date"
+                  value={eventForm.date}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter the date or time period (e.g., 'Year 1000', '1000 CE', 'Third Age')"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={eventForm.description}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={4}
+                  placeholder="Describe what happened during this event"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Significance
+                </label>
+                <textarea
+                  name="significance"
+                  value={eventForm.significance}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={4}
+                  placeholder="Explain why this event is important to the story"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Impact on the World
+                </label>
+                <textarea
+                  name="impact"
+                  value={eventForm.impact}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={4}
+                  placeholder="Describe how this event changed the world"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Key Characters Involved
+                </label>
+                <textarea
+                  name="characters"
+                  value={eventForm.characters}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={4}
+                  placeholder="List and describe the important characters involved in this event"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Important Artifacts or Items
+                </label>
+                <textarea
+                  name="artifacts"
+                  value={eventForm.artifacts}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={4}
+                  placeholder="List any important items, artifacts, or objects associated with this event"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  name="isCriticalPoint"
+                  checked={eventForm.isCriticalPoint}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label className="text-sm font-medium text-gray-700">
+                  Mark as Critical Story Point
+                </label>
+              </div>
+              <div className="flex justify-end space-x-2">
+                {editingEvent && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingEvent(null);
+                      setEventForm({
+                        name: '',
+                        date: '',
+                        description: '',
+                        significance: '',
+                        impact: '',
+                        characters: '',
+                        artifacts: '',
+                        isCriticalPoint: false
+                      });
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
                 <button
-                  type="button"
-                  onClick={() => {
-                    setEditingEvent(null);
-                    setEventForm({
-                      name: '',
-                      date: '',
-                      description: '',
-                      significance: '',
-                      impact: '',
-                      characters: '',
-                      artifacts: '',
-                      isCriticalPoint: false
-                    });
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                 >
-                  Cancel
+                  {editingEvent ? 'Update Event' : 'Add Event'}
                 </button>
-              )}
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-              >
-                {editingEvent ? 'Update Event' : 'Add Event'}
-              </button>
-            </div>
-          </form>
+              </div>
+            </form>
+          </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
