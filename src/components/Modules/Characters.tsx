@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactFlow, { 
   Node, 
   Edge,
@@ -6,7 +6,7 @@ import ReactFlow, {
   Background,
   MarkerType
 } from 'reactflow';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, RefreshCw } from 'lucide-react';
 import 'reactflow/dist/style.css';
 
 interface Character {
@@ -18,7 +18,10 @@ interface Character {
 }
 
 const Characters = () => {
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [characters, setCharacters] = useState<Character[]>(() => {
+    const savedCharacters = localStorage.getItem('worldCharacters');
+    return savedCharacters ? JSON.parse(savedCharacters) : [];
+  });
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
   const [showGraph, setShowGraph] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +30,26 @@ const Characters = () => {
     backstory: '',
     powers: ''
   });
+
+  // Save characters to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('worldCharacters', JSON.stringify(characters));
+  }, [characters]);
+
+  // Add reset function
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to delete all characters? This action cannot be undone.')) {
+      setCharacters([]);
+      localStorage.removeItem('worldCharacters');
+      setFormData({
+        name: '',
+        personality: '',
+        backstory: '',
+        powers: ''
+      });
+      setEditingCharacter(null);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -87,7 +110,16 @@ const Characters = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Characters</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Characters</h2>
+        <button
+          onClick={handleReset}
+          className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span>Reset All</span>
+        </button>
+      </div>
       <div className="space-y-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">

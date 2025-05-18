@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Clock, Star } from 'lucide-react';
+import { Plus, Trash2, Edit2, Clock, Star, RefreshCw } from 'lucide-react';
 
 interface HistoricalEvent {
   id: string;
@@ -34,6 +34,25 @@ const HistoryTimeline = () => {
   useEffect(() => {
     localStorage.setItem('historicalEvents', JSON.stringify(events));
   }, [events]);
+
+  // Add reset function
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to delete all events? This action cannot be undone.')) {
+      setEvents([]);
+      localStorage.removeItem('historicalEvents');
+      setEventForm({
+        name: '',
+        date: '',
+        description: '',
+        significance: '',
+        impact: '',
+        characters: '',
+        artifacts: '',
+        isCriticalPoint: false
+      });
+      setEditingEvent(null);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -99,7 +118,16 @@ const HistoryTimeline = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">History & Timeline</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">History & Timeline</h2>
+        <button
+          onClick={handleReset}
+          className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span>Reset All</span>
+        </button>
+      </div>
       
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow p-6">

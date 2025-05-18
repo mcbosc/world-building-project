@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Trash2, Edit2, Users, PawPrint } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Trash2, Edit2, Users, PawPrint, RefreshCw } from 'lucide-react';
 
 interface Race {
   id: string;
@@ -20,8 +20,14 @@ interface Creature {
 }
 
 const RacesCreatures = () => {
-  const [races, setRaces] = useState<Race[]>([]);
-  const [creatures, setCreatures] = useState<Creature[]>([]);
+  const [races, setRaces] = useState<Race[]>(() => {
+    const savedRaces = localStorage.getItem('worldRaces');
+    return savedRaces ? JSON.parse(savedRaces) : [];
+  });
+  const [creatures, setCreatures] = useState<Creature[]>(() => {
+    const savedCreatures = localStorage.getItem('worldCreatures');
+    return savedCreatures ? JSON.parse(savedCreatures) : [];
+  });
   const [editingRace, setEditingRace] = useState<Race | null>(null);
   const [editingCreature, setEditingCreature] = useState<Creature | null>(null);
   const [activeTab, setActiveTab] = useState<'races' | 'creatures'>('races');
@@ -41,6 +47,41 @@ const RacesCreatures = () => {
     behavior: '',
     abilities: ''
   });
+
+  // Save races and creatures to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('worldRaces', JSON.stringify(races));
+  }, [races]);
+
+  useEffect(() => {
+    localStorage.setItem('worldCreatures', JSON.stringify(creatures));
+  }, [creatures]);
+
+  // Add reset function
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to delete all races and creatures? This action cannot be undone.')) {
+      setRaces([]);
+      setCreatures([]);
+      localStorage.removeItem('worldRaces');
+      localStorage.removeItem('worldCreatures');
+      setRaceForm({
+        name: '',
+        physicalTraits: '',
+        culture: '',
+        abilities: '',
+        society: ''
+      });
+      setCreatureForm({
+        name: '',
+        description: '',
+        habitat: '',
+        behavior: '',
+        abilities: ''
+      });
+      setEditingRace(null);
+      setEditingCreature(null);
+    }
+  };
 
   const handleRaceInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -136,7 +177,16 @@ const RacesCreatures = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Races & Creatures</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Races & Creatures</h2>
+        <button
+          onClick={handleReset}
+          className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span>Reset All</span>
+        </button>
+      </div>
       
       <div className="flex space-x-4 mb-6">
         <button
